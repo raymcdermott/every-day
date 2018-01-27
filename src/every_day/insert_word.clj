@@ -44,6 +44,8 @@
                       :verb-present "sprouting"
                       :verb-past    "sprouted"}})
 
+(def replacement-syntax-parts (keys (:bad l33t)))
+
 (def quotations [[{:pronoun "I"}
                   {:verb-present "like"}
                   {:adjective "green"}
@@ -126,28 +128,25 @@
 (defn syntax-match?
   "Check whether a given syntax includes a match"
   [syntax match]
-  (= match (reduce (fn [w1 w2]
-                     (let [wm (if (coll? w1) (conj w1 w2) [w1 w2])]
-                       (if (= wm match)
-                         (reduced match)
-                         [w2]))) syntax)))
+  (= match (reduce
+             (fn [w1 w2]
+               (let [wm (if (coll? w1) (conj w1 w2) [w1 w2])]
+                 (if (= wm match)
+                   (reduced match)
+                   [w2]))) syntax)))
 
 (defn syntax-match-nth?
   "Find the index where a given syntax is included in a match"
-  [syntax match]
-  (let [index (atom 0)
-        pos   (reduce (fn [w1 w2]
-                        (let [wm (if (coll? w1) (conj w1 w2) [w1 w2])]
-                          (if (= wm match)
-                            (reduced @index)
-                            (do (swap! index inc)
-                                [w2])))) syntax)]
+  [syntax syntax-match]
+  (let [pos (reduce
+              (fn [w1 w2]
+                (let [{:keys [index match]} w1]
+                  (if (= syntax-match (conj match w2))
+                    (reduced index)
+                    (assoc {} :index (inc index) :match [w2]))))
+              {:index 0 :match []} syntax)]
     (if (number? pos) pos nil)))
 
-(defn syntax-replace
-  [rule quote]
-  ;
-  )
 
 (defn matching-rules
   "Return the rules matched on the given syntax or an empty list"
@@ -174,7 +173,11 @@
   [(get l33t degree-badness)
    (get veg degree-badness)])
 
-(defn rando-bad-part
-  [part]
-  (get (rand-nth (bad-matches (rand-nth badness))) part))
+(defn syntax-replace
+  [rules quote]
+  (let [matches (take 2 (matching-rules rules (syntax quote)))
+        [l33t veg] (bad-matches (rand-nth badness))]
 
+    )
+
+  )
