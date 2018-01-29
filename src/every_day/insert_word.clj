@@ -64,10 +64,8 @@
   (repeatedly repetitions #(random-replacement replacements quotes)))
 
 (defn display-replacements
-  [replacements quotes repetitions pause-length]
+  [replacements quotes repetitions]
   (let [qs (random-repeat-replacements replacements quotes repetitions)]
-    (dorun (map (fn [quote]
-                  (println quote)
-                  (Thread/sleep pause-length)) qs))))
+    (map (comp clojure.string/join (partial clojure.string/join " ")) qs)))
 
-(display-replacements replacers/potus quotes/qs 20 0)
+(display-replacements replacers/potus quotes/qs 10)
