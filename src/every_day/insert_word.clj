@@ -55,17 +55,21 @@
 
 (defn quote-replace-in
   "Inject the replacements into the quote at the given spots"
-  [q replacements]
+  [quotation replacements]
   (:output (reduce
              (fn [w1 w2]
                (let [{:keys [index replacements output]} w1
                      replace-1 (first replacements)
                      replace-2 (last replacements)]
                  (cond
-                   (= (:pos replace-1) index) (assoc w1 :index (inc index) :output (conj output (:replacement replace-1)))
-                   (= (:pos replace-2) index) (assoc w1 :index (inc index) :output (conj output (:replacement replace-2)))
-                   :else (assoc w1 :index (inc index) :output (conj output w2)))))
-             {:index 0 :replacements replacements :output []} q)))
+                   (= (:pos replace-1) index) (assoc w1 :index (inc index)
+                                                        :output (conj output (:replacement replace-1)))
+                   (= (:pos replace-2) index) (assoc w1 :index (inc index)
+                                                        :output (conj output (:replacement replace-2)))
+                   :else (assoc w1 :index (inc index)
+                                   :output (conj output w2)))))
+             {:index 0 :replacements replacements :output []}
+             quotation)))
 
 (defn syntax-replace
   [replacement-parts badness-degrees replacements quotation]
@@ -115,3 +119,7 @@
 (def veg-speak (partial enhanced-quote replacements/veg))
 (def l33t-speak (partial enhanced-quote replacements/l33t))
 (def potus-speak (partial enhanced-quote replacements/potus))
+
+; mix em up a little
+
+
