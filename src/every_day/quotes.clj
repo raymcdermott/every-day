@@ -5,7 +5,7 @@
           {:adjective "green"}
           {:noun-plural "eggs"}
           {:conjunction "and"}
-          {:noun "ham"}]
+          {:noun-plural "ham"}]
          [{:pronoun "You"}
           {:verb-present "are"}
           {:pronoun "you"}
@@ -31,9 +31,11 @@
           {:punctuation :full-stop}
           {:verb-present "Smile"}
           {:conjunction "because"}
-          {:noun "it"}
+          {:definite-article "it"}
           {:verb-past "happened"}]])
 
-(def punctuation {:full-stop "."
-                  :comma     ","})
 
+(def syntax-parts
+  "Obtain all keys and place them in a set"
+  (reduce into #{}
+          (map (comp flatten (partial map keys)) qs)))

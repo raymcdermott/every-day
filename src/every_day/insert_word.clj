@@ -1,11 +1,16 @@
 (ns every-day.insert-word
-  (:require [every-day.replacements :as replacers]
-            [every-day.quotes :as quotes]
-            [clojure.set :as set]))
+  (:require [every-day.quotes :as quotes]
+            [every-day.replacements :as replacements]
+            [clojure.set :as set]
+            [clojure.spec.alpha :as spec]))
+
+(spec/def ::words (spec/coll-of string?))
+(spec/def ::syntax-parts (spec/coll-of keyword?))
+(spec/def ::badness-degrees (spec/coll-of keyword?))
 
 (defn words
   "Return the words from a given quotation"
-  [quotation]
+  [quotation punctuation]
   (map (fn [word]
          (if (keyword? word)
            (get punctuation word)
@@ -19,19 +24,22 @@
 (defn n-degrees
   "Find n distinct degrees of badness from the given list"
   [degrees n]
+  ; n must be <= (count degrees)
   (loop [kws-rand (conj #{} (rand-nth degrees))]
-    (if (= n (count kws-rand))
+    (if (= (count kws-rand) n)
       (vec kws-rand)
       (recur (conj kws-rand (rand-nth degrees))))))
 
 (defn n-parts
-  "Find n distinct parts that are in the syntax and the replacement parts"
+  "Find n distinct parts that are in both the syntax and the replacement parts"
   [syntax replacement-parts n]
   (let [keywords (vec (set/intersection syntax replacement-parts))]
-    (loop [kws-rand (conj #{} (rand-nth keywords))]
-      (if (= n (count kws-rand))
-        (vec kws-rand)
-        (recur (conj kws-rand (rand-nth keywords)))))))
+    (if (<= (count keywords) n)
+      keywords
+      (loop [kws-rand (conj #{} (rand-nth keywords))]
+        (if (= (count kws-rand) n)
+          (vec kws-rand)
+          (recur (conj kws-rand (rand-nth keywords))))))))
 
 (defn syntax-match-rand-nth
   "Give rand-nth on index/es where a given syntax part is located in a given syntax"
@@ -59,11 +67,11 @@
              {:index 0 :replacements replacements :output []} q)))
 
 (defn syntax-replace
-  [replacements quotation]
+  [replacement-parts badness-degrees replacements quotation]
   (let [quote-syntax (syntax quotation)
         [part-1 part-2] (n-parts (set quote-syntax)
-                                 (set replacers/replacement-parts) 2)
-        [degree-1 degree-2] (n-degrees replacers/badness-degrees 2)
+                                 (set replacement-parts) 2)
+        [degree-1 degree-2] (n-degrees badness-degrees 2)
         replace-1    (assoc {} part-1 (get (get replacements degree-1) part-1))
         replace-2    (assoc {} part-2 (get (get replacements degree-2) part-2))
         pos-1        (syntax-match-rand-nth quote-syntax part-1)
@@ -74,19 +82,24 @@
 
 (defn replace-all
   [replacements quotes]
-  (map (partial syntax-replace replacements) quotes))
+  (map (partial syntax-replace
+                replacements/replacement-parts
+                replacements/badness-degrees
+                replacements)
+       quotes))
 
 (defn random-replacement
-  [replacements quotes]
-  (words (rand-nth (replace-all replacements quotes))))
+  [replacements quotes punctuation]
+  (words (rand-nth (replace-all replacements quotes)) punctuation))
 
 (defn random-repeat-replacements
-  [replacements quotes repetitions]
-  (repeatedly repetitions #(random-replacement replacements quotes)))
+  [replacements quotes repetitions punctuation]
+  (repeatedly repetitions #(random-replacement replacements quotes punctuation)))
 
-(defn display-replacements
-  [replacements quotes repetitions]
-  (let [qs (random-repeat-replacements replacements quotes repetitions)]
+(defn format-random-replace
+  [replacements quotes punctuation & repetitions]
+  (let [repetitions (or repetitions 1)
+        qs (random-repeat-replacements replacements quotes repetitions punctuation)]
     (map (comp clojure.string/join (partial clojure.string/join " ")) qs)))
 
-(display-replacements replacers/potus quotes/qs 1)
+(format-random-replace replacements/potus quotes/qs replacements/punctuation)

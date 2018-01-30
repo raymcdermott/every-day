@@ -39,8 +39,8 @@
             :the-worst {:noun         "covfefe"
                         :noun-plural  "covfefe"
                         :adjective    "stable genius"
-                        :verb-present "lie"
-                        :verb-past    "lied"}})
+                        :verb-present "con"
+                        :verb-past    "conned"}})
 
 (def veg {:bad       {:noun         "carrot"
                       :noun-plural  "carrots"
@@ -63,7 +63,12 @@
                       :verb-present "severely sprouts"
                       :verb-past    "sprouted"}})
 
-(def badness-degrees (keys l33t))
+(def badness-degrees
+  [:bad :very-bad :super-bad :the-worst])
 
-(def replacement-parts (keys (:bad l33t)))
+(def replacement-parts
+  [:noun :noun-plural :adjective :verb-present :verb-past])
+
+(def punctuation {:full-stop "."
+                  :comma     ","})
 
