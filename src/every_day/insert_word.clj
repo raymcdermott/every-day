@@ -1,6 +1,7 @@
 (ns every-day.insert-word
   (:require [every-day.quotes :as quotes]
             [every-day.replacements :as replacements]
+            [clojure.string :as string]
             [clojure.set :as set]
             [clojure.spec.alpha :as spec]))
 
@@ -96,10 +97,20 @@
   [replacements quotes repetitions punctuation]
   (repeatedly repetitions #(random-replacement replacements quotes punctuation)))
 
-(defn format-random-replace
-  [replacements quotes punctuation & repetitions]
-  (let [repetitions (or repetitions 1)
-        qs (random-repeat-replacements replacements quotes repetitions punctuation)]
-    (map (comp clojure.string/join (partial clojure.string/join " ")) qs)))
+(defn format-quote
+  [punctuation quote]
+  (string/join (interpose " " (words quote punctuation))))
 
-(format-random-replace replacements/potus quotes/qs replacements/punctuation)
+(defn format-random-replace
+  [replacements quotes punctuation repetitions]
+  (let [qs (random-repeat-replacements replacements quotes repetitions punctuation)]
+    (map (partial format-quote punctuation) qs)))
+
+(defn enhanced-quote
+  [change-pack quote]
+  (format-quote replacements/punctuation
+    (syntax-replace replacements/replacement-parts replacements/badness-degrees change-pack quote)))
+
+(def veg-speak (partial enhanced-quote replacements/veg))
+(def l33t-speak (partial enhanced-quote replacements/l33t))
+(def potus-speak (partial enhanced-quote replacements/potus))
