@@ -86,8 +86,8 @@
   (map (partial syntax-replace
                 replacements/replacement-parts
                 replacements/badness-degrees
-                replacements)
-       quotes))
+                replacements
+                quotes)))
 
 (defn random-replacement
   [replacements quotes punctuation]
@@ -111,6 +111,7 @@
   (format-quote replacements/punctuation
     (syntax-replace replacements/replacement-parts replacements/badness-degrees change-pack quote)))
 
+(def speak (partial format-quote replacements/punctuation))
 (def veg-speak (partial enhanced-quote replacements/veg))
 (def l33t-speak (partial enhanced-quote replacements/l33t))
 (def potus-speak (partial enhanced-quote replacements/potus))
